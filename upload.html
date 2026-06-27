@@ -1,0 +1,215 @@
+<!-- UPLOAD PAGE -->
+      <div class="page" id="page-upload">
+        <div class="section-title">Genome Extraction Engine</div>
+        <div class="section-sub">Upload timesheets, invoices, or payroll documents for AI processing</div>
+
+        <div class="grid-2">
+          <div>
+            <div class="upload-zone" onclick="simulateUpload()">
+              <i class="ti ti-cloud-upload"></i>
+              <p>Drop files here or click to browse</p>
+              <small>Supports PDF, Excel, CSV, Images, Handwritten Notes, Email</small>
+              <div class="format-chips">
+                <span class="format-chip"><i class="ti ti-file-type-pdf"></i> PDF</span>
+                <span class="format-chip"><i class="ti ti-file-type-xls"></i> Excel</span>
+                <span class="format-chip"><i class="ti ti-csv"></i> CSV</span>
+                <span class="format-chip"><i class="ti ti-photo"></i> Image</span>
+                <span class="format-chip"><i class="ti ti-mail"></i> Email</span>
+                <span class="format-chip"><i class="ti ti-writing"></i> Handwritten</span>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:16px" id="upload-progress" style="display:none">
+              <div class="card-header">
+                <div class="card-title">Processing: Accenture_Timesheet_June.pdf</div>
+                <span class="badge badge-info"><i class="ti ti-loader"></i> Processing</span>
+              </div>
+              <div>
+                <div class="processing-step done">
+                  <span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span>
+                  <span class="step-label">Document Upload</span>
+                  <span class="step-status" style="color:#1baf7a">Complete</span>
+                </div>
+                <div class="processing-step done">
+                  <span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span>
+                  <span class="step-label">AI OCR — Document Scanning</span>
+                  <span class="step-status" style="color:#1baf7a">Complete</span>
+                </div>
+                <div class="processing-step active" id="active-step">
+                  <span class="step-icon" style="color:#2a78d6"><i class="ti ti-dna"></i></span>
+                  <span class="step-label">Genome Extraction Engine</span>
+                  <span class="step-status" style="color:#2a78d6">Running...</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-shield-check"></i></span>
+                  <span class="step-label">Business Validation</span>
+                  <span class="step-status">Pending</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-shield"></i></span>
+                  <span class="step-label">Policy Guardian</span>
+                  <span class="step-status">Pending</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-file-invoice"></i></span>
+                  <span class="step-label">Invoice Generation</span>
+                  <span class="step-status">Pending</span>
+                </div>
+              </div>
+              <div style="margin-top:12px">
+                <div class="loading-bar"><div class="loading-fill" id="proc-bar" style="width:45%"></div></div>
+                <div style="font-size:11px;color:var(--text-muted);text-align:right">45% — Genome extraction in progress</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Auto-Categorization</div>
+                <span class="badge badge-purple"><i class="ti ti-sparkles"></i> AI Powered</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-file-invoice" style="color:#2a78d6"></i> Timesheet</span>
+                  <span class="badge badge-info">23 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-report-money" style="color:#1baf7a"></i> Payroll</span>
+                  <span class="badge badge-success">11 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-file-text" style="color:#4a3aa7"></i> Invoice</span>
+                  <span class="badge badge-purple">8 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-mail" style="color:#eda100"></i> Email Attachment</span>
+                  <span class="badge badge-warning">5 files</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">Recent Uploads</div>
+              <table>
+                <thead><tr><th>File</th><th>Type</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Accenture_Jun.pdf</td><td><span class="badge badge-info">Timesheet</span></td><td><span class="badge badge-success">Done</span></td></tr>
+                  <tr><td>TCS_Payroll.xlsx</td><td><span class="badge badge-success">Payroll</span></td><td><span class="badge badge-warning">Review</span></td></tr>
+                  <tr><td>Wipro_INV_2044.pdf</td><td><span class="badge badge-purple">Invoice</span></td><td><span class="badge badge-success">Done</span></td></tr>
+                  <tr><td>Emirates_scan.jpg</td><td><span class="badge badge-warning">Handwritten</span></td><td><span class="badge badge-danger">Failed</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENOME EXTRACTION PAGE -->
+      <div class="page" id="page-extraction">
+        <div class="section-title">Genome Extraction Engine</div>
+        <div class="section-sub">AI-extracted fields from Accenture_Timesheet_June.pdf — Genome Confidence Index: <strong style="color:#1baf7a">94.2%</strong></div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Scanned Document</div>
+                <span class="badge badge-info scan-anim"><i class="ti ti-scan"></i> OCR Active</span>
+              </div>
+              <div style="background:var(--surface-1);border-radius:8px;padding:16px;font-family:monospace;font-size:11px;line-height:1.8;color:var(--text-secondary);position:relative;overflow:hidden">
+                <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#2a78d6,transparent);animation:scanLine 2s ease-in-out infinite"></div>
+                ACCENTURE MIDDLE EAST — TIMESHEET<br>
+                Period: June 2026 | Entity: AME001<br>
+                ─────────────────────────────────<br>
+                Employee: <span style="color:#2a78d6;font-weight:500">Ahmed Al-Rashid</span><br>
+                Employee ID: <span style="color:#2a78d6;font-weight:500">EMP-04821</span><br>
+                Working Days: <span style="color:#1baf7a;font-weight:500">22</span><br>
+                Hours Worked: <span style="color:#1baf7a;font-weight:500">176</span><br>
+                Overtime Hours: <span style="color:#eda100;font-weight:500">8</span><br>
+                Base Salary: <span style="color:#2a78d6;font-weight:500">AED 18,500</span><br>
+                Tax Rate: <span style="color:#2a78d6;font-weight:500">0%</span><br>
+                Client: <span style="color:#4a3aa7;font-weight:500">Abu Dhabi National Oil Co.</span><br>
+                Total: <span style="color:#1baf7a;font-weight:500">AED 20,150</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Genome Confidence Index</div>
+                <button class="btn btn-sm" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> Explain</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Employee Name</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:98%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">98%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Employee ID</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:96%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">96%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Working Days</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:99%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">99%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Salary</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:91%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">91%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Tax Rate</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:88%;background:#eda100"></div></div>
+                  <span style="width:34px;text-align:right;color:#eda100">88%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Client</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:79%;background:#eda100"></div></div>
+                  <span style="width:34px;text-align:right;color:#eda100">79%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card-title" style="margin-bottom:12px">Extracted Fields</div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Employee Name</span>
+                <span class="badge badge-success">98% <i class="ti ti-check" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">Ahmed Al-Rashid</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Text block at row 4, high contrast, clear font match</div>
+            </div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Working Days</span>
+                <span class="badge badge-success">99% <i class="ti ti-check" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">22 days</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Matches June 2026 calendar — 22 working days verified</div>
+            </div>
+            <div class="extraction-field" style="border-color:#eda100">
+              <div class="field-header">
+                <span class="field-name">Tax Rate</span>
+                <span class="badge badge-warning">88% <i class="ti ti-alert-triangle" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">0% <span style="font-size:11px;color:#eda100">(UAE VAT — verify)</span></div>
+              <div style="font-size:11px;color:#b07a00;margin-top:3px">AI: UAE entities typically 0% on salary — confirming with ERP rule</div>
+              <button class="btn btn-sm" style="margin-top:6px;border-color:#eda100;color:#b07a00" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> Explain this decision</button>
+            </div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Total Amount</span>
+                <span class="badge badge-success">97%</span>
+              </div>
+              <div class="field-value">AED 20,150.00</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Base salary + overtime calculated. Cross-verified with totals.</div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="showPage('validation')"><i class="ti ti-arrow-right"></i> Run Validation</button>
+              <button class="btn"><i class="ti ti-edit"></i> Edit Fields</button>
+            </div>
+          </div>
+        </div>
+      </div>
