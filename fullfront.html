@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Genome</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-sans, system-ui, sans-serif); background: var(--surface-0, #f1f0ee); color: var(--text-primary, #0b0b0b); min-height: 100vh; overflow-x: hidden; }
+
+  :root {
+    --genome-primary: #2a78d6;
+    --genome-success: #1baf7a;
+    --genome-warning: #eda100;
+    --genome-danger: #e34948;
+    --genome-purple: #4a3aa7;
+    --radius-card: 12px;
+  }
+
+  .app-shell { display: flex; min-height: 100vh; }
+
+  .sidebar { width: 220px; min-width: 220px; background: var(--surface-2, #fff); border-right: 0.5px solid var(--border, rgba(0,0,0,0.1)); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 18px 16px 12px; border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1)); }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #2a78d6, #4a3aa7); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+  .logo-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .logo-tag { font-size: 10px; color: var(--text-muted, #898781); margin-top: 1px; }
+
+  .nav-section { padding: 12px 8px 4px; }
+  .nav-label { font-size: 10px; font-weight: 500; color: var(--text-muted, #898781); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: var(--radius, 8px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #52514e); transition: all 0.15s; margin-bottom: 1px; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--surface-1, #f8f8f7); color: var(--text-primary); }
+  .nav-item.active { background: #e8f0fb; color: #2a78d6; }
+  .nav-item i { font-size: 15px; }
+  .nav-badge { margin-left: auto; background: var(--genome-danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar { background: var(--surface-2, #fff); border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1)); padding: 10px 24px; display: flex; align-items: center; gap: 12px; }
+  .page-title { font-size: 15px; font-weight: 500; }
+  .breadcrumb { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius, 8px); font-size: 13px; cursor: pointer; border: 0.5px solid var(--border-strong, rgba(0,0,0,0.2)); background: var(--surface-2, #fff); color: var(--text-primary); transition: all 0.15s; font-family: inherit; }
+  .btn:hover { background: var(--surface-1, #f8f8f7); }
+  .btn-primary { background: #2a78d6; color: #fff; border-color: #2a78d6; }
+  .btn-primary:hover { background: #1d5fa8; border-color: #1d5fa8; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #2a78d6, #4a3aa7); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 500; }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi-card { background: var(--surface-2, #fff); border: 0.5px solid var(--border, rgba(0,0,0,0.1)); border-radius: var(--radius-card); padding: 16px; }
+  .kpi-label { font-size: 11px; color: var(--text-muted, #898781); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .kpi-value { font-size: 26px; font-weight: 500; line-height: 1; }
+  .kpi-delta { font-size: 11px; margin-top: 4px; display: flex; align-items: center; gap: 3px; }
+  .delta-up { color: #1baf7a; }
+  .delta-down { color: #e34948; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .card { background: var(--surface-2, #fff); border: 0.5px solid var(--border, rgba(0,0,0,0.1)); border-radius: var(--radius-card); padding: 16px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 500; }
+  .card-muted { font-size: 11px; color: var(--text-muted); }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-success { background: #e8f8f1; color: #0d8a5e; }
+  .badge-warning { background: #fef8e7; color: #b07a00; }
+  .badge-danger { background: #fdeaea; color: #b03030; }
+  .badge-info { background: #e8f0fb; color: #1a5fa8; }
+  .badge-purple { background: #eeedf8; color: #3a2d8a; }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-green { background: #1baf7a; }
+  .dot-yellow { background: #eda100; }
+  .dot-red { background: #e34948; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 11px; font-weight: 500; color: var(--text-muted, #898781); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 12px; text-align: left; border-bottom: 0.5px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.07)); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface-1, #f8f8f7); }
+
+  .confidence-bar { height: 4px; border-radius: 2px; background: var(--surface-1, #f0efec); overflow: hidden; }
+  .confidence-fill { height: 100%; border-radius: 2px; }
+
+  .integrity-gauge { width: 80px; height: 80px; position: relative; }
+  .integrity-gauge svg { width: 80px; height: 80px; }
+
+  .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.07)); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+  .ai-icon { background: #e8f0fb; color: #2a78d6; }
+  .check-icon { background: #e8f8f1; color: #1baf7a; }
+  .warn-icon { background: #fef8e7; color: #eda100; }
+  .err-icon { background: #fdeaea; color: #e34948; }
+  .activity-body { flex: 1; }
+  .activity-text { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
+  .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .pipeline-step { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .pipeline-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .pipeline-line { width: 1px; height: 20px; background: var(--border); margin-left: 4.5px; }
+  .pipeline-label { font-size: 12px; }
+  .pipeline-count { margin-left: auto; font-size: 12px; font-weight: 500; }
+  .pipeline-status { font-size: 11px; color: var(--text-muted); }
+
+  .upload-zone { border: 1.5px dashed var(--border-strong, rgba(0,0,0,0.2)); border-radius: var(--radius-card); padding: 40px 24px; text-align: center; background: var(--surface-1, #f8f8f7); cursor: pointer; transition: all 0.2s; }
+  .upload-zone:hover { border-color: #2a78d6; background: #f0f6ff; }
+  .upload-zone i { font-size: 32px; color: var(--text-muted); display: block; margin-bottom: 10px; }
+  .upload-zone p { font-size: 13px; color: var(--text-secondary); }
+  .upload-zone small { font-size: 11px; color: var(--text-muted); }
+
+  .format-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+  .format-chip { background: var(--surface-2, #fff); border: 0.5px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--text-secondary); }
+
+  .extraction-field { background: var(--surface-2, #fff); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+  .field-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .field-name { font-size: 11px; color: var(--text-muted); }
+  .field-value { font-size: 14px; font-weight: 500; }
+  .field-conf { font-size: 11px; }
+
+  .validation-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; }
+  .val-pass { background: #e8f8f1; }
+  .val-warn { background: #fef8e7; }
+  .val-error { background: #fdeaea; }
+  .val-icon { font-size: 14px; }
+  .val-text { font-size: 12px; flex: 1; }
+  .val-rule { font-size: 11px; color: var(--text-muted); }
+
+  .dna-container { background: var(--surface-1, #f8f8f7); border-radius: 12px; padding: 20px; overflow-x: auto; }
+  .dna-track { display: flex; align-items: center; gap: 4px; min-width: 600px; }
+  .dna-node { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+  .dna-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; text-align: center; border: 2px solid transparent; transition: all 0.2s; }
+  .dna-circle:hover { transform: scale(1.1); }
+  .dna-label { font-size: 9px; color: var(--text-muted); text-align: center; max-width: 50px; }
+  .dna-connector { flex: 1; height: 2px; background: var(--border); position: relative; }
+  .dna-connector::after { content: ''; position: absolute; right: -3px; top: -3px; width: 8px; height: 8px; border-top: 2px solid var(--border); border-right: 2px solid var(--border); transform: rotate(45deg); }
+
+  .timeline-step { display: flex; gap: 16px; padding: 12px 0; position: relative; }
+  .timeline-left { display: flex; flex-direction: column; align-items: center; }
+  .timeline-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .timeline-vline { width: 1px; flex: 1; min-height: 20px; margin-top: 4px; }
+  .timeline-body { flex: 1; padding-bottom: 8px; }
+  .timeline-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .timeline-sub { font-size: 12px; color: var(--text-muted); }
+  .timeline-time { font-size: 11px; color: var(--text-muted); }
+
+  .copilot-bubble { position: fixed; bottom: 24px; right: 24px; z-index: 1000; }
+  .copilot-btn { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #2a78d6, #4a3aa7); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(42,120,214,0.35); transition: all 0.2s; }
+  .copilot-btn:hover { transform: scale(1.08); }
+  .copilot-btn i { color: #fff; font-size: 20px; }
+  .copilot-panel { position: absolute; bottom: 60px; right: 0; width: 300px; background: var(--surface-2, #fff); border: 0.5px solid var(--border); border-radius: 16px; padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; }
+  .copilot-panel.open { display: block; }
+  .copilot-header { padding: 12px 14px; background: linear-gradient(135deg, #2a78d6, #4a3aa7); }
+  .copilot-title { font-size: 13px; font-weight: 500; color: #fff; }
+  .copilot-sub { font-size: 10px; color: rgba(255,255,255,0.7); }
+  .copilot-messages { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .copilot-msg { font-size: 12px; padding: 8px 10px; border-radius: 10px; max-width: 90%; }
+  .copilot-msg.ai { background: #e8f0fb; color: #1a5fa8; align-self: flex-start; }
+  .copilot-msg.user { background: #2a78d6; color: #fff; align-self: flex-end; }
+  .copilot-suggestions { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-top: 0.5px solid var(--border); }
+  .copilot-suggest { font-size: 10px; padding: 3px 8px; border-radius: 12px; border: 0.5px solid var(--border); background: var(--surface-1); cursor: pointer; color: var(--text-secondary); transition: all 0.15s; }
+  .copilot-suggest:hover { background: #e8f0fb; color: #2a78d6; border-color: #2a78d6; }
+  .copilot-input-row { display: flex; gap: 6px; padding: 8px 12px; border-top: 0.5px solid var(--border); }
+  .copilot-input { flex: 1; border: 0.5px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; background: var(--surface-1); color: var(--text-primary); font-family: inherit; }
+  .copilot-send { background: #2a78d6; color: #fff; border: none; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+  .role-card { background: var(--surface-2, #fff); border: 1.5px solid var(--border); border-radius: var(--radius-card); padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .role-card:hover { border-color: #2a78d6; background: #f4f8ff; transform: translateY(-2px); }
+  .role-card.selected { border-color: #2a78d6; background: #e8f0fb; }
+  .role-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; }
+  .role-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .role-desc { font-size: 12px; color: var(--text-muted); }
+
+  .scan-anim { position: relative; overflow: hidden; }
+  .scan-anim::after { content: ''; position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #2a78d6, transparent); animation: scanLine 2s ease-in-out infinite; }
+  @keyframes scanLine { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+  .processing-step { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface-1, #f8f8f7); margin-bottom: 6px; }
+  .processing-step.done { background: #e8f8f1; }
+  .processing-step.active { background: #e8f0fb; animation: pulse 1.5s ease infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  .processing-step.pending { opacity: 0.5; }
+  .step-icon { font-size: 16px; }
+  .step-label { font-size: 13px; flex: 1; }
+  .step-status { font-size: 11px; }
+
+  .insight-card { background: var(--surface-2, #fff); border: 0.5px solid var(--border); border-radius: var(--radius-card); padding: 16px; }
+  .insight-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 18px; }
+  .insight-value { font-size: 24px; font-weight: 500; }
+  .insight-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .insight-trend { font-size: 11px; margin-top: 6px; }
+
+  .review-card { background: var(--surface-2, #fff); border: 0.5px solid var(--border); border-radius: var(--radius-card); padding: 16px; margin-bottom: 12px; border-left: 3px solid #eda100; }
+  .review-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .review-actions { display: flex; gap: 6px; margin-top: 12px; }
+
+  .chart-wrap { position: relative; width: 100%; }
+
+  .progress-ring { transform: rotate(-90deg); }
+
+  input[type="text"], input[type="email"], select, textarea { border: 0.5px solid var(--border-strong, rgba(0,0,0,0.2)); border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 100%; background: var(--surface-2, #fff); color: var(--text-primary); font-family: inherit; }
+
+  .section-title { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+  .section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+  .loading-bar { height: 3px; background: var(--surface-1, #f0efec); border-radius: 2px; overflow: hidden; margin: 8px 0; }
+  .loading-fill { height: 100%; border-radius: 2px; background: #2a78d6; transition: width 0.5s ease; }
+
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 0.5px solid var(--border); background: var(--surface-1); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+  .chip:hover, .chip.active { border-color: #2a78d6; background: #e8f0fb; color: #2a78d6; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500; display: none; align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface-2, #fff); border-radius: 16px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; border: 0.5px solid var(--border); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .modal-title { font-size: 16px; font-weight: 500; }
+  .modal-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-muted); padding: 4px; border-radius: 6px; }
+  .modal-close:hover { background: var(--surface-1); }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+      </div>
+      <div class="logo-name">Invoice Genome</div>
+      <div class="logo-tag">Decoding Every Invoice with AI</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" onclick="showPage('dashboard')">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('genome-timeline')">
+        <i class="ti ti-timeline"></i> Genome Timeline
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Processing</div>
+      <button class="nav-item" onclick="showPage('upload')">
+        <i class="ti ti-upload"></i> Upload
+      </button>
+      <button class="nav-item" onclick="showPage('extraction')">
+        <i class="ti ti-dna"></i> Genome Extraction
+      </button>
+      <button class="nav-item" onclick="showPage('dna-viewer')">
+        <i class="ti ti-topology-star"></i> DNA Viewer
+      </button>
+      <button class="nav-item" onclick="showPage('validation')">
+        <i class="ti ti-shield-check"></i> Validation
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Review</div>
+      <button class="nav-item" onclick="showPage('review')">
+        <i class="ti ti-eye"></i> Human Review
+        <span class="nav-badge">5</span>
+      </button>
+      <button class="nav-item" onclick="showPage('policy')">
+        <i class="ti ti-shield"></i> Policy Guardian
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Invoices</div>
+      <button class="nav-item" onclick="showPage('generator')">
+        <i class="ti ti-file-invoice"></i> Generator
+      </button>
+      <button class="nav-item" onclick="showPage('dispatch')">
+        <i class="ti ti-send"></i> Dispatch Center
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Intelligence</div>
+      <button class="nav-item" onclick="showPage('analytics')">
+        <i class="ti ti-chart-bar"></i> Analytics
+      </button>
+      <button class="nav-item" onclick="showPage('insights')">
+        <i class="ti ti-bulb"></i> Finance Insights
+      </button>
+    </div>
+
+    <div class="nav-section" style="margin-top: auto;">
+      <button class="nav-item">
+        <i class="ti ti-settings"></i> Settings
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="page-title" id="page-title">Dashboard</span>
+        <span class="breadcrumb" id="breadcrumb">Genome Intelligence</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-sm" onclick="showPage('upload')"><i class="ti ti-upload"></i> Upload</button>
+        <button class="btn btn-primary btn-sm" onclick="openCopilot()"><i class="ti ti-robot"></i> AI Copilot</button>
+        <div class="avatar">JD</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="section-title">Genome Intelligence Hub</div>
+        <div class="section-sub">Real-time processing overview — <strong>June 27, 2026</strong></div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Invoices Today</div>
+            <div class="kpi-value" style="color:#2a78d6">47</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> +12 from yesterday</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pending Review</div>
+            <div class="kpi-value" style="color:#eda100">5</div>
+            <div class="kpi-delta"><span style="color:#eda100"><i class="ti ti-clock" style="font-size:12px"></i> Needs attention</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">AI Accuracy</div>
+            <div class="kpi-value" style="color:#1baf7a">97.4%</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> +0.3% this week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Touchless Rate</div>
+            <div class="kpi-value" style="color:#4a3aa7">89%</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> Target: 95%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Revenue Processed</div>
+            <div class="kpi-value" style="font-size:20px">AED 2.4M</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> This month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Avg Processing</div>
+            <div class="kpi-value" style="font-size:20px">3.2s</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> -0.4s improved</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Monthly Invoice Volume</div>
+              <span class="badge badge-info">2026</span>
+            </div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="volumeChart" role="img" aria-label="Monthly invoice volume chart">Monthly invoice volumes from Jan to Jun 2026.</canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Live Activity Feed</div>
+              <span class="badge badge-success"><span class="dot dot-green"></span> Live</span>
+            </div>
+            <div id="activity-feed">
+              <div class="activity-item">
+                <div class="activity-icon ai-icon"><i class="ti ti-robot"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Genome extracted from <strong>Accenture_TS_June.pdf</strong></div>
+                  <div class="activity-time">2 seconds ago · Confidence 96%</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon check-icon"><i class="ti ti-check"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Invoice <strong>INV-2047</strong> approved and dispatched</div>
+                  <div class="activity-time">14 seconds ago · Infosys Ltd.</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon warn-icon"><i class="ti ti-alert-triangle"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Salary mismatch</strong> detected — sent to review queue</div>
+                  <div class="activity-time">1 min ago · Employee ID E-0492</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon ai-icon"><i class="ti ti-dna"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Genome Confidence Index: <strong>94.2%</strong> — TCS Timesheet</div>
+                  <div class="activity-time">2 min ago · Genome verified</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon err-icon"><i class="ti ti-x"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Duplicate invoice detected — <strong>INV-2031</strong> flagged</div>
+                  <div class="activity-time">5 min ago · Policy Guardian blocked</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Workflow Pipeline</div>
+            </div>
+            <div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#1baf7a"></div><span class="pipeline-label">OCR &amp; Extraction</span><span class="pipeline-count" style="color:#1baf7a">38</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#1baf7a"></div><span class="pipeline-label">Validation</span><span class="pipeline-count" style="color:#1baf7a">31</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#eda100"></div><span class="pipeline-label">Human Review</span><span class="pipeline-count" style="color:#eda100">5</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#2a78d6"></div><span class="pipeline-label">ERP Conversion</span><span class="pipeline-count" style="color:#2a78d6">24</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#4a3aa7"></div><span class="pipeline-label">Dispatch</span><span class="pipeline-count" style="color:#4a3aa7">18</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Genome Health Score</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+              <div style="position:relative;width:90px;height:90px;flex-shrink:0">
+                <svg viewBox="0 0 90 90" width="90" height="90">
+                  <circle cx="45" cy="45" r="38" fill="none" stroke="#f0efec" stroke-width="8"/>
+                  <circle cx="45" cy="45" r="38" fill="none" stroke="#1baf7a" stroke-width="8" stroke-dasharray="239" stroke-dashoffset="36" stroke-linecap="round" class="progress-ring"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                  <span style="font-size:20px;font-weight:500;color:#1baf7a">85</span>
+                  <span style="font-size:9px;color:var(--text-muted)">/ 100</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:500;margin-bottom:8px">Today's genome health</div>
+                <div style="font-size:11px;color:#1baf7a;margin-bottom:4px"><i class="ti ti-check"></i> 42 passed integrity check</div>
+                <div style="font-size:11px;color:#eda100;margin-bottom:4px"><i class="ti ti-alert-triangle"></i> 5 in review queue</div>
+                <div style="font-size:11px;color:#e34948"><i class="ti ti-x"></i> 2 failed validation</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Top Clients</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#2a78d6;flex-shrink:0">AC</div>
+                <span style="flex:1">Accenture</span>
+                <span class="badge badge-success">Trust 98</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#e8f8f1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#1baf7a;flex-shrink:0">TC</div>
+                <span style="flex:1">TCS</span>
+                <span class="badge badge-success">Trust 95</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#fef8e7;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#b07a00;flex-shrink:0">IS</div>
+                <span style="flex:1">Infosys</span>
+                <span class="badge badge-warning">Trust 78</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#eeedf8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#3a2d8a;flex-shrink:0">WP</div>
+                <span style="flex:1">Wipro</span>
+                <span class="badge badge-info">Trust 88</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#fdeaea;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#b03030;flex-shrink:0">EM</div>
+                <span style="flex:1">Emirates Group</span>
+                <span class="badge badge-danger">Trust 61</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPLOAD PAGE -->
+      <div class="page" id="page-upload">
+        <div class="section-title">Genome Extraction Engine</div>
+        <div class="section-sub">Upload timesheets, invoices, or payroll documents for AI processing</div>
+
+        <div class="grid-2">
+          <div>
+            <div class="upload-zone" onclick="simulateUpload()">
+              <i class="ti ti-cloud-upload"></i>
+              <p>Drop files here or click to browse</p>
+              <small>Supports PDF, Excel, CSV, Images, Handwritten Notes, Email</small>
+              <div class="format-chips">
+                <span class="format-chip"><i class="ti ti-file-type-pdf"></i> PDF</span>
+                <span class="format-chip"><i class="ti ti-file-type-xls"></i> Excel</span>
+                <span class="format-chip"><i class="ti ti-csv"></i> CSV</span>
+                <span class="format-chip"><i class="ti ti-photo"></i> Image</span>
+                <span class="format-chip"><i class="ti ti-mail"></i> Email</span>
+                <span class="format-chip"><i class="ti ti-writing"></i> Handwritten</span>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:16px" id="upload-progress" style="display:none">
+              <div class="card-header">
+                <div class="card-title">Processing: Accenture_Timesheet_June.pdf</div>
+                <span class="badge badge-info"><i class="ti ti-loader"></i> Processing</span>
+              </div>
+              <div>
+                <div class="processing-step done">
+                  <span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span>
+                  <span class="step-label">Document Upload</span>
+                  <span class="step-status" style="color:#1baf7a">Complete</span>
+                </div>
+                <div class="processing-step done">
+                  <span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span>
+                  <span class="step-label">AI OCR — Document Scanning</span>
+                  <span class="step-status" style="color:#1baf7a">Complete</span>
+                </div>
+                <div class="processing-step active" id="active-step">
+                  <span class="step-icon" style="color:#2a78d6"><i class="ti ti-dna"></i></span>
+                  <span class="step-label">Genome Extraction Engine</span>
+                  <span class="step-status" style="color:#2a78d6">Running...</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-shield-check"></i></span>
+                  <span class="step-label">Business Validation</span>
+                  <span class="step-status">Pending</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-shield"></i></span>
+                  <span class="step-label">Policy Guardian</span>
+                  <span class="step-status">Pending</span>
+                </div>
+                <div class="processing-step pending">
+                  <span class="step-icon"><i class="ti ti-file-invoice"></i></span>
+                  <span class="step-label">Invoice Generation</span>
+                  <span class="step-status">Pending</span>
+                </div>
+              </div>
+              <div style="margin-top:12px">
+                <div class="loading-bar"><div class="loading-fill" id="proc-bar" style="width:45%"></div></div>
+                <div style="font-size:11px;color:var(--text-muted);text-align:right">45% — Genome extraction in progress</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Auto-Categorization</div>
+                <span class="badge badge-purple"><i class="ti ti-sparkles"></i> AI Powered</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-file-invoice" style="color:#2a78d6"></i> Timesheet</span>
+                  <span class="badge badge-info">23 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-report-money" style="color:#1baf7a"></i> Payroll</span>
+                  <span class="badge badge-success">11 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-file-text" style="color:#4a3aa7"></i> Invoice</span>
+                  <span class="badge badge-purple">8 files</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-1);border-radius:8px">
+                  <span><i class="ti ti-mail" style="color:#eda100"></i> Email Attachment</span>
+                  <span class="badge badge-warning">5 files</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">Recent Uploads</div>
+              <table>
+                <thead><tr><th>File</th><th>Type</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Accenture_Jun.pdf</td><td><span class="badge badge-info">Timesheet</span></td><td><span class="badge badge-success">Done</span></td></tr>
+                  <tr><td>TCS_Payroll.xlsx</td><td><span class="badge badge-success">Payroll</span></td><td><span class="badge badge-warning">Review</span></td></tr>
+                  <tr><td>Wipro_INV_2044.pdf</td><td><span class="badge badge-purple">Invoice</span></td><td><span class="badge badge-success">Done</span></td></tr>
+                  <tr><td>Emirates_scan.jpg</td><td><span class="badge badge-warning">Handwritten</span></td><td><span class="badge badge-danger">Failed</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENOME EXTRACTION PAGE -->
+      <div class="page" id="page-extraction">
+        <div class="section-title">Genome Extraction Engine</div>
+        <div class="section-sub">AI-extracted fields from Accenture_Timesheet_June.pdf — Genome Confidence Index: <strong style="color:#1baf7a">94.2%</strong></div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Scanned Document</div>
+                <span class="badge badge-info scan-anim"><i class="ti ti-scan"></i> OCR Active</span>
+              </div>
+              <div style="background:var(--surface-1);border-radius:8px;padding:16px;font-family:monospace;font-size:11px;line-height:1.8;color:var(--text-secondary);position:relative;overflow:hidden">
+                <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#2a78d6,transparent);animation:scanLine 2s ease-in-out infinite"></div>
+                ACCENTURE MIDDLE EAST — TIMESHEET<br>
+                Period: June 2026 | Entity: AME001<br>
+                ─────────────────────────────────<br>
+                Employee: <span style="color:#2a78d6;font-weight:500">Ahmed Al-Rashid</span><br>
+                Employee ID: <span style="color:#2a78d6;font-weight:500">EMP-04821</span><br>
+                Working Days: <span style="color:#1baf7a;font-weight:500">22</span><br>
+                Hours Worked: <span style="color:#1baf7a;font-weight:500">176</span><br>
+                Overtime Hours: <span style="color:#eda100;font-weight:500">8</span><br>
+                Base Salary: <span style="color:#2a78d6;font-weight:500">AED 18,500</span><br>
+                Tax Rate: <span style="color:#2a78d6;font-weight:500">0%</span><br>
+                Client: <span style="color:#4a3aa7;font-weight:500">Abu Dhabi National Oil Co.</span><br>
+                Total: <span style="color:#1baf7a;font-weight:500">AED 20,150</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Genome Confidence Index</div>
+                <button class="btn btn-sm" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> Explain</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Employee Name</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:98%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">98%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Employee ID</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:96%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">96%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Working Days</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:99%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">99%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Salary</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:91%;background:#1baf7a"></div></div>
+                  <span style="width:34px;text-align:right;color:#1baf7a">91%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Tax Rate</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:88%;background:#eda100"></div></div>
+                  <span style="width:34px;text-align:right;color:#eda100">88%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                  <span style="width:90px;color:var(--text-muted)">Client</span>
+                  <div class="confidence-bar" style="flex:1"><div class="confidence-fill" style="width:79%;background:#eda100"></div></div>
+                  <span style="width:34px;text-align:right;color:#eda100">79%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card-title" style="margin-bottom:12px">Extracted Fields</div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Employee Name</span>
+                <span class="badge badge-success">98% <i class="ti ti-check" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">Ahmed Al-Rashid</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Text block at row 4, high contrast, clear font match</div>
+            </div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Working Days</span>
+                <span class="badge badge-success">99% <i class="ti ti-check" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">22 days</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Matches June 2026 calendar — 22 working days verified</div>
+            </div>
+            <div class="extraction-field" style="border-color:#eda100">
+              <div class="field-header">
+                <span class="field-name">Tax Rate</span>
+                <span class="badge badge-warning">88% <i class="ti ti-alert-triangle" style="font-size:10px"></i></span>
+              </div>
+              <div class="field-value">0% <span style="font-size:11px;color:#eda100">(UAE VAT — verify)</span></div>
+              <div style="font-size:11px;color:#b07a00;margin-top:3px">AI: UAE entities typically 0% on salary — confirming with ERP rule</div>
+              <button class="btn btn-sm" style="margin-top:6px;border-color:#eda100;color:#b07a00" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> Explain this decision</button>
+            </div>
+            <div class="extraction-field">
+              <div class="field-header">
+                <span class="field-name">Total Amount</span>
+                <span class="badge badge-success">97%</span>
+              </div>
+              <div class="field-value">AED 20,150.00</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">AI: Base salary + overtime calculated. Cross-verified with totals.</div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="showPage('validation')"><i class="ti ti-arrow-right"></i> Run Validation</button>
+              <button class="btn"><i class="ti ti-edit"></i> Edit Fields</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DNA VIEWER PAGE -->
+      <div class="page" id="page-dna-viewer">
+        <div class="section-title">Invoice DNA Viewer</div>
+        <div class="section-sub">Visual genome map of INV-2047 — click any node to inspect AI insights</div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-title">Invoice DNA Structure — Accenture June 2026</div>
+            <span class="badge badge-success"><i class="ti ti-dna"></i> Genome Verified</span>
+          </div>
+          <div class="dna-container">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Strand A — Employee Data</div>
+            <div class="dna-track">
+              <div class="dna-node" onclick="showDnaInsight('employee')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-user" style="font-size:18px"></i></div>
+                <div class="dna-label">Employee</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('hours')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-clock" style="font-size:18px"></i></div>
+                <div class="dna-label">Hours</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('salary')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-currency-dollar" style="font-size:18px"></i></div>
+                <div class="dna-label">Salary</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('tax')">
+                <div class="dna-circle" style="background:#fef8e7;color:#b07a00;border-color:#eda100"><i class="ti ti-receipt-tax" style="font-size:18px"></i></div>
+                <div class="dna-label">Tax</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('client')">
+                <div class="dna-circle" style="background:#eeedf8;color:#4a3aa7;border-color:#4a3aa7"><i class="ti ti-building" style="font-size:18px"></i></div>
+                <div class="dna-label">Client</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('validation')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-shield-check" style="font-size:18px"></i></div>
+                <div class="dna-label">Validation</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('integrity')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-chart-pie" style="font-size:18px"></i></div>
+                <div class="dna-label">Integrity</div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:var(--text-muted);margin:16px 0 12px">Strand B — Processing Trail</div>
+            <div class="dna-track">
+              <div class="dna-node" onclick="showDnaInsight('ocr')">
+                <div class="dna-circle" style="background:#f0efec;color:#52514e;border-color:#b4b2a9"><i class="ti ti-scan" style="font-size:18px"></i></div>
+                <div class="dna-label">OCR</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('erp')">
+                <div class="dna-circle" style="background:#eeedf8;color:#4a3aa7;border-color:#4a3aa7"><i class="ti ti-database" style="font-size:18px"></i></div>
+                <div class="dna-label">ERP</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('policy')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-shield" style="font-size:18px"></i></div>
+                <div class="dna-label">Policy</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#fef8e7;color:#b07a00;border-color:#eda100"><i class="ti ti-clock" style="font-size:18px"></i></div>
+                <div class="dna-label">Pending</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-send" style="font-size:18px"></i></div>
+                <div class="dna-label">Dispatch</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-check-circle" style="font-size:18px"></i></div>
+                <div class="dna-label">Approve</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-archive" style="font-size:18px"></i></div>
+                <div class="dna-label">Archive</div>
+              </div>
+            </div>
+          </div>
+          <div id="dna-insight-box" style="display:none;margin-top:16px;background:var(--surface-1);border-radius:10px;padding:14px;border-left:3px solid #2a78d6">
+            <div style="font-size:12px;font-weight:500;margin-bottom:6px" id="dna-insight-title">AI Insight</div>
+            <div style="font-size:12px;color:var(--text-secondary)" id="dna-insight-body">Click a node to view AI reasoning</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">Invoice Integrity Score</div>
+            <div style="display:flex;align-items:center;gap:20px">
+              <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+                <svg viewBox="0 0 100 100" width="100" height="100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#f0efec" stroke-width="10"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#2a78d6" stroke-width="10" stroke-dasharray="264" stroke-dashoffset="40" stroke-linecap="round" class="progress-ring"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                  <span style="font-size:22px;font-weight:500;color:#2a78d6">85</span>
+                  <span style="font-size:9px;color:var(--text-muted)">/ 100</span>
+                </div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:12px;margin-bottom:8px">Score components</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Validation</span><span style="color:#1baf7a">30/30</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Confidence</span><span style="color:#1baf7a">25/30</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">History</span><span style="color:#eda100">15/20</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Risk</span><span style="color:#eda100">15/20</span></div>
+                  <div style="border-top:0.5px solid var(--border);padding-top:4px;display:flex;justify-content:space-between;font-weight:500"><span>Total</span><span style="color:#2a78d6">85/100</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">Genome Audit Trail</div>
+            <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:01</span><span style="color:#2a78d6">Document uploaded — PDF detected</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:03</span><span>OCR scan initiated — 12 pages</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:05</span><span style="color:#1baf7a">Genome extraction complete — 14 fields</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:06</span><span style="color:#eda100">Tax rate flagged for review — 88% confidence</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:08</span><span style="color:#1baf7a">Policy Guardian — passed all 7 rules</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:09</span><span style="color:#2a78d6">Integrity Score calculated: 85/100</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VALIDATION PAGE -->
+      <div class="page" id="page-validation">
+        <div class="section-title">Business Rule Validation</div>
+        <div class="section-sub">Automated validation engine — Policy Guardian active</div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Validation Results</div>
+                <span class="badge badge-warning">1 Warning</span>
+              </div>
+              <div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>No Duplicate Employee</strong><br><span class="val-rule">Employee ID EMP-04821 — unique in this period</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Working Days Valid</strong><br><span class="val-rule">22 days matches June 2026 calendar</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>No Negative Values</strong><br><span class="val-rule">All fields positive — salary, hours, overtime</span></div>
+                </div>
+                <div class="validation-row val-warn">
+                  <span class="val-icon" style="color:#eda100"><i class="ti ti-alert-triangle"></i></span>
+                  <div class="val-text"><strong>Tax Rate Needs Verification</strong><br><span class="val-rule">UAE entity shows 0% — confirm with client ERP rule</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Currency Match</strong><br><span class="val-rule">AED matches client billing entity AME001</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Salary Within Band</strong><br><span class="val-rule">AED 18,500 — within grade 4 approved band</span></div>
+                </div>
+                <div class="validation-row val-error">
+                  <span class="val-icon" style="color:#e34948"><i class="ti ti-x-circle"></i></span>
+                  <div class="val-text"><strong>Smart Correction Suggested</strong><br><span class="val-rule">Overtime hours: 8 hrs → max allowed per policy is 6 hrs</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Smart Correction AI</div><span class="badge badge-purple"><i class="ti ti-sparkles"></i> AI</span></div>
+              <div style="background:#fdeaea;border-radius:8px;padding:12px;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:500;color:#b03030;margin-bottom:4px"><i class="ti ti-alert-triangle"></i> Correction Required</div>
+                <div style="font-size:12px;color:#8b2020">Overtime hours is 8 but policy limit is 6. Working Days should be recalculated.</div>
+                <button class="btn btn-sm" style="margin-top:8px;background:#e34948;color:#fff;border-color:#e34948" onclick="alert('Correction applied: Overtime set to 6 hrs. Total recalculated.')">Apply Correction</button>
+              </div>
+              <div style="background:#fef8e7;border-radius:8px;padding:12px">
+                <div style="font-size:12px;font-weight:500;color:#b07a00;margin-bottom:4px"><i class="ti ti-info-circle"></i> AI Suggestion</div>
+                <div style="font-size:12px;color:#8a5d00">Currency should be confirmed as AED. Client AME001 contracts are AED-denominated per ERP master data.</div>
+                <button class="btn btn-sm" style="margin-top:8px;border-color:#eda100;color:#b07a00">Confirm AED</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Policy Guardian</div><span class="badge badge-success"><i class="ti ti-shield-check"></i> 6/7 Passed</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Payroll Policy</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Client Billing Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Tax Rules (UAE)</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#fdeaea;border-radius:7px"><span>Overtime Cap Policy</span><span style="color:#e34948"><i class="ti ti-x"></i> Fail</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>ERP Conversion Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Finance Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Duplicate Check</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Resolution Box</div></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Overtime policy violation — resolution ticket automatically created</div>
+              <div style="background:var(--surface-1);border-radius:8px;padding:12px;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:500">RES-2024-1182</span><span class="badge badge-warning">Open</span></div>
+                <div style="font-size:11px;color:var(--text-muted)">Assigned to: Fatima Al-Zaabi (Finance Review)</div>
+                <div style="font-size:11px;color:var(--text-muted)">Created: 10:32:10 today</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-primary" onclick="alert('Email sent to ahmed.alrashid@accenture.com')"><i class="ti ti-mail"></i> Email Client</button>
+                <button class="btn btn-sm"><i class="ti ti-eye"></i> View Ticket</button>
+                <button class="btn btn-sm" onclick="showPage('review')"><i class="ti ti-arrow-right"></i> Send to Review</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HUMAN REVIEW PAGE -->
+      <div class="page" id="page-review">
+        <div class="section-title">Human Review Queue</div>
+        <div class="section-sub">5 invoices require human attention — Genome Confidence below 90%</div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <span class="chip active">All (5)</span>
+          <span class="chip">Low Confidence</span>
+          <span class="chip">Validation Failure</span>
+          <span class="chip">Policy Violation</span>
+          <span class="chip">Salary Mismatch</span>
+        </div>
+
+        <div class="review-card">
+          <div class="review-header">
+            <div>
+              <div style="font-size:13px;font-weight:500">TCS_Payroll_June.xlsx — Salary Mismatch</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Employee: Priya Menon (EMP-03291) · Confidence: 72%</div>
+            </div>
+            <div style="text-align:right">
+              <span class="badge badge-danger">Confidence 72%</span>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Assigned: You</div>
+            </div>
+          </div>
+          <div style="background:#fdeaea;border-radius:8px;padding:10px;font-size:12px">
+            <strong>AI Reason:</strong> Extracted salary AED 22,000 does not match ERP master record AED 19,500. Confidence below threshold — human verification required.
+          </div>
+          <div class="review-actions">
+            <button class="btn btn-sm btn-primary" onclick="alert('INV-2049 approved and queued for generation')"><i class="ti ti-check"></i> Approve</button>
+            <button class="btn btn-sm" style="border-color:#e34948;color:#b03030" onclick="alert('INV-2049 rejected. Notification sent.')"><i class="ti ti-x"></i> Reject</button>
+            <button class="btn btn-sm"><i class="ti ti-edit"></i> Edit</button>
+            <button class="btn btn-sm" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> AI Explain</button>
+            <button class="btn btn-sm"><i class="ti ti-message"></i> Comment</button>
+          </div>
+        </div>
+
+        <div class="review-card" style="border-left-color:#e34948">
+          <div class="review-header">
+            <div>
+              <div style="font-size:13px;font-weight:500">Emirates_Handwritten_scan.jpg — Low Confidence</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Employee: Khalid Hamdan (EMP-06741) · Confidence: 61%</div>
+            </div>
+            <div style="text-align:right">
+              <span class="badge badge-danger">Confidence 61%</span>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Assigned: Sarah K.</div>
+            </div>
+          </div>
+          <div style="background:#fdeaea;border-radius:8px;padding:10px;font-size:12px">
+            <strong>AI Reason:</strong> Handwritten document — OCR accuracy reduced by poor scan quality. Hours worked field partially illegible. Manual entry needed.
+          </div>
+          <div class="review-actions">
+            <button class="btn btn-sm btn-primary" onclick="alert('Approved with manual override')"><i class="ti ti-check"></i> Approve</button>
+            <button class="btn btn-sm" style="border-color:#e34948;color:#b03030"><i class="ti ti-x"></i> Reject</button>
+            <button class="btn btn-sm"><i class="ti ti-edit"></i> Edit</button>
+            <button class="btn btn-sm" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> AI Explain</button>
+          </div>
+        </div>
+
+        <div class="review-card" style="border-left-color:#eda100">
+          <div class="review-header">
+            <div>
+              <div style="font-size:13px;font-weight:500">Infosys_Invoice_May.pdf — Duplicate Risk</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Invoice #INV-2031 · Submitted twice · Confidence: 88%</div>
+            </div>
+            <div style="text-align:right">
+              <span class="badge badge-warning">Duplicate Risk</span>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Auto-flagged</div>
+            </div>
+          </div>
+          <div style="background:#fef8e7;border-radius:8px;padding:10px;font-size:12px">
+            <strong>AI Reason:</strong> Invoice number INV-2031 was already processed on June 15. Policy Guardian blocked auto-approval — verify if resubmission is intentional.
+          </div>
+          <div class="review-actions">
+            <button class="btn btn-sm btn-primary"><i class="ti ti-check"></i> Approve as New</button>
+            <button class="btn btn-sm" style="border-color:#e34948;color:#b03030"><i class="ti ti-x"></i> Reject Duplicate</button>
+            <button class="btn btn-sm" onclick="openExplainModal()"><i class="ti ti-info-circle"></i> AI Explain</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENERATOR PAGE -->
+      <div class="page" id="page-generator">
+        <div class="section-title">Invoice Generator</div>
+        <div class="section-sub">AI-powered invoice generation from validated genome data</div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Invoice Preview — INV-2047</div><span class="badge badge-success">Ready to Dispatch</span></div>
+              <div style="background:#fff;border:0.5px solid var(--border);border-radius:8px;padding:20px;font-size:12px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:16px;align-items:flex-start">
+                  <div>
+                    <div style="font-size:14px;font-weight:500;color:#2a78d6">INVOICE</div>
+                    <div style="color:var(--text-muted)">INV-2047</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-weight:500">ACCENTURE ME</div>
+                    <div style="color:var(--text-muted)">Genome Entity: AME001</div>
+                    <div style="color:var(--text-muted)">June 27, 2026</div>
+                  </div>
+                </div>
+                <div style="border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border);padding:8px 0;margin-bottom:12px">
+                  <div><strong>Bill To:</strong> Abu Dhabi National Oil Co.</div>
+                  <div style="color:var(--text-muted)">Period: June 1 – June 30, 2026</div>
+                </div>
+                <table style="font-size:11px;width:100%">
+                  <tr style="background:var(--surface-1)"><th style="padding:6px 8px;text-align:left">Description</th><th style="padding:6px 8px;text-align:right">Qty</th><th style="padding:6px 8px;text-align:right">Rate</th><th style="padding:6px 8px;text-align:right">Amount</th></tr>
+                  <tr><td style="padding:6px 8px">Ahmed Al-Rashid — Consultant</td><td style="padding:6px 8px;text-align:right">22d</td><td style="padding:6px 8px;text-align:right">840.91</td><td style="padding:6px 8px;text-align:right">18,500.00</td></tr>
+                  <tr><td style="padding:6px 8px">Overtime — 8 hrs</td><td style="padding:6px 8px;text-align:right">8h</td><td style="padding:6px 8px;text-align:right">206.25</td><td style="padding:6px 8px;text-align:right">1,650.00</td></tr>
+                  <tr style="font-weight:500;background:var(--surface-1)"><td colspan="3" style="padding:6px 8px;text-align:right">Total (AED)</td><td style="padding:6px 8px;text-align:right;color:#2a78d6">20,150.00</td></tr>
+                </table>
+                <div style="margin-top:10px;font-size:10px;color:var(--text-muted);border-top:0.5px solid var(--border);padding-top:8px">
+                  Genome Confidence: 94.2% · Integrity Score: 85/100 · Generated by Invoice Genome AI
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="showPage('dispatch')"><i class="ti ti-send"></i> Dispatch Invoice</button>
+              <button class="btn"><i class="ti ti-download"></i> Download PDF</button>
+              <button class="btn"><i class="ti ti-edit"></i> Edit</button>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Generation Workflow</div></div>
+              <div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">Genome Data Read</span><span class="step-status" style="color:#1baf7a">0.2s</span></div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">AI Processing</span><span class="step-status" style="color:#1baf7a">0.8s</span></div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">Validation Passed</span><span class="step-status" style="color:#1baf7a">0.3s</span></div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">ERP Conversion</span><span class="step-status" style="color:#1baf7a">1.1s</span></div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">Invoice Generated</span><span class="step-status" style="color:#1baf7a">0.4s</span></div>
+                <div class="processing-step done"><span class="step-icon" style="color:#1baf7a"><i class="ti ti-check"></i></span><span class="step-label">PDF Created</span><span class="step-status" style="color:#1baf7a">0.2s</span></div>
+              </div>
+              <div style="margin-top:10px;font-size:12px;color:#1baf7a;font-weight:500;text-align:center;padding:8px;background:#e8f8f1;border-radius:8px">✓ Invoice INV-2047 completed in 3.0 seconds</div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Batch Generation</div></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Generate invoices for all validated timesheets in one click</div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+                <span>Ready to generate</span><strong>24 invoices</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
+                <span>Estimated time</span><strong>~72 seconds</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px">
+                <span>Total value</span><strong style="color:#2a78d6">AED 1.2M</strong>
+              </div>
+              <button class="btn btn-primary" onclick="alert('Batch generation started for 24 invoices. Estimated: 72 seconds.')"><i class="ti ti-player-play"></i> Generate All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS PAGE -->
+      <div class="page" id="page-analytics">
+        <div class="section-title">Genome Analytics</div>
+        <div class="section-sub">AI performance, accuracy, and processing trends</div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Total Processed</div><div class="kpi-value">1,284</div><div class="kpi-delta delta-up">This quarter</div></div>
+          <div class="kpi-card"><div class="kpi-label">AI Accuracy</div><div class="kpi-value" style="color:#1baf7a">97.4%</div><div class="kpi-delta delta-up">↑ 2.1% QoQ</div></div>
+          <div class="kpi-card"><div class="kpi-label">Human Reviews</div><div class="kpi-value" style="color:#eda100">68</div><div class="kpi-delta delta-down">5.3% of total</div></div>
+          <div class="kpi-card"><div class="kpi-label">Exceptions</div><div class="kpi-value" style="color:#e34948">23</div><div class="kpi-delta delta-down">↓ 34% vs last quarter</div></div>
+        </div>
+
+        <div class="grid-2" style="margin-top:0">
+          <div class="card">
+            <div class="card-header"><div class="card-title">AI Accuracy Trend</div></div>
+            <div style="height:220px;position:relative"><canvas id="accuracyChart" role="img" aria-label="AI accuracy trend over 6 months">AI accuracy increasing from 93% to 97.4% over 6 months.</canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Exception Categories</div></div>
+            <div style="height:220px;position:relative"><canvas id="exceptionChart" role="img" aria-label="Exception categories breakdown">Exception categories: Salary mismatch 35%, Duplicate 22%, Low confidence 18%, Tax issue 15%, Other 10%.</canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Client Processing Performance</div></div>
+          <table>
+            <thead><tr><th>Client</th><th>Invoices</th><th>Accuracy</th><th>Avg Time</th><th>Exceptions</th><th>Trust Score</th></tr></thead>
+            <tbody>
+              <tr><td>Accenture</td><td>312</td><td><span style="color:#1baf7a">98.2%</span></td><td>2.8s</td><td>6</td><td><span class="badge badge-success">98</span></td></tr>
+              <tr><td>TCS</td><td>248</td><td><span style="color:#1baf7a">96.8%</span></td><td>3.1s</td><td>8</td><td><span class="badge badge-success">95</span></td></tr>
+              <tr><td>Infosys</td><td>191</td><td><span style="color:#eda100">89.4%</span></td><td>4.2s</td><td>21</td><td><span class="badge badge-warning">78</span></td></tr>
+              <tr><td>Wipro</td><td>164</td><td><span style="color:#1baf7a">93.1%</span></td><td>3.5s</td><td>11</td><td><span class="badge badge-info">88</span></td></tr>
+              <tr><td>Emirates Group</td><td>89</td><td><span style="color:#e34948">77.3%</span></td><td>6.8s</td><td>22</td><td><span class="badge badge-danger">61</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INSIGHTS PAGE -->
+      <div class="page" id="page-insights">
+        <div class="section-title">Finance Insight Hub</div>
+        <div class="section-sub">AI-generated intelligence for strategic finance decisions</div>
+
+        <div class="grid-3" style="margin-bottom:16px">
+          <div class="insight-card">
+            <div class="insight-icon" style="background:#e8f0fb"><i class="ti ti-trending-up" style="color:#2a78d6"></i></div>
+            <div class="insight-value" style="color:#2a78d6">AED 8.2M</div>
+            <div class="insight-label">Projected Q3 Revenue</div>
+            <div class="insight-trend delta-up"><i class="ti ti-trending-up" style="font-size:11px"></i> +18% vs Q2 forecast</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon" style="background:#fdeaea"><i class="ti ti-alert-circle" style="color:#e34948"></i></div>
+            <div class="insight-value" style="color:#e34948">Emirates</div>
+            <div class="insight-label">Top Delayed Client</div>
+            <div class="insight-trend" style="color:#e34948">Avg delay: 12 days</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-icon" style="background:#fef8e7"><i class="ti ti-map-pin" style="color:#eda100"></i></div>
+            <div class="insight-value" style="color:#eda100">Tax Fields</div>
+            <div class="insight-label">Top Exception Hotspot</div>
+            <div class="insight-trend" style="color:#eda100">38% of all exceptions</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Revenue Forecast</div><span class="badge badge-purple"><i class="ti ti-sparkles"></i> AI Generated</span></div>
+            <div style="height:200px;position:relative"><canvas id="forecastChart" role="img" aria-label="Revenue forecast chart">Revenue forecast showing growth from Q1 to Q4 2026.</canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Operational Recommendations</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="background:#e8f0fb;border-radius:8px;padding:10px;font-size:12px;border-left:3px solid #2a78d6">
+                <strong>Retrain OCR on handwritten docs</strong><br>
+                <span style="color:var(--text-muted)">Emirates handwritten scans show 23% lower accuracy. Training data recommended.</span>
+              </div>
+              <div style="background:#fef8e7;border-radius:8px;padding:10px;font-size:12px;border-left:3px solid #eda100">
+                <strong>Client SLA: Infosys response delays</strong><br>
+                <span style="color:var(--text-muted)">Avg invoice approval 4.2 days over SLA. Escalation workflow recommended.</span>
+              </div>
+              <div style="background:#e8f8f1;border-radius:8px;padding:10px;font-size:12px;border-left:3px solid #1baf7a">
+                <strong>Automation ready: TCS &amp; Accenture</strong><br>
+                <span style="color:var(--text-muted)">Both clients qualify for 100% touchless processing. Enable auto-dispatch.</span>
+              </div>
+              <div style="background:#eeedf8;border-radius:8px;padding:10px;font-size:12px;border-left:3px solid #4a3aa7">
+                <strong>Risk: Overtime policy violations trending up</strong><br>
+                <span style="color:var(--text-muted)">12 violations this month vs 3 last month. Review policy communication.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENOME TIMELINE PAGE -->
+      <div class="page" id="page-genome-timeline">
+        <div class="section-title">Genome Timeline</div>
+        <div class="section-sub">End-to-end processing lifecycle for INV-2047 — Accenture June 2026</div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Processing Timeline</div><span class="badge badge-success">Completed</span></div>
+            <div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f0fb"><i class="ti ti-upload" style="color:#2a78d6;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Document Upload</div><div class="timeline-sub">Accenture_TS_June.pdf — 4.2 MB</div><div class="timeline-time">10:32:01</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f0fb"><i class="ti ti-scan" style="color:#2a78d6;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">AI OCR Scanning</div><div class="timeline-sub">12 pages processed — 0.8 seconds</div><div class="timeline-time">10:32:02</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f8f1"><i class="ti ti-dna" style="color:#1baf7a;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Genome Extraction</div><div class="timeline-sub">14 fields extracted · Confidence 94.2%</div><div class="timeline-time">10:32:05</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#eeedf8"><i class="ti ti-chart-pie" style="color:#4a3aa7;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Genome Confidence Index</div><div class="timeline-sub">Index: 94.2% · 1 field flagged for review</div><div class="timeline-time">10:32:05</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f8f1"><i class="ti ti-shield-check" style="color:#1baf7a;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Business Validation</div><div class="timeline-sub">6/7 rules passed · Overtime flagged</div><div class="timeline-time">10:32:06</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f8f1"><i class="ti ti-shield" style="color:#1baf7a;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Policy Guardian</div><div class="timeline-sub">All finance policies verified</div><div class="timeline-time">10:32:08</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#eeedf8"><i class="ti ti-star" style="color:#4a3aa7;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Integrity Score Calculated</div><div class="timeline-sub">Score: 85/100 · Proceeding to ERP</div><div class="timeline-time">10:32:09</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f0fb"><i class="ti ti-database" style="color:#2a78d6;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">ERP Conversion</div><div class="timeline-sub">SAP format generated — GL codes mapped</div><div class="timeline-time">10:32:10</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f8f1"><i class="ti ti-file-invoice" style="color:#1baf7a;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Invoice Generated</div><div class="timeline-sub">INV-2047 — AED 20,150 · PDF ready</div><div class="timeline-time">10:32:11</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f0fb"><i class="ti ti-send" style="color:#2a78d6;font-size:14px"></i></div><div class="timeline-vline" style="background:var(--border)"></div></div>
+                <div class="timeline-body"><div class="timeline-title">Dispatched to Client</div><div class="timeline-sub">Sent to ADNOC procurement portal</div><div class="timeline-time">10:32:12</div></div>
+              </div>
+              <div class="timeline-step">
+                <div class="timeline-left"><div class="timeline-circle" style="background:#e8f8f1"><i class="ti ti-circle-check" style="color:#1baf7a;font-size:14px"></i></div></div>
+                <div class="timeline-body"><div class="timeline-title">Client Approved</div><div class="timeline-sub">Approved by ADNOC · Payment scheduled</div><div class="timeline-time">11:47:33</div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Processing Summary</div></div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Total processing time</span><strong>3.2 seconds</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Human intervention</span><strong style="color:#1baf7a">None (Touchless)</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">AI decisions made</span><strong>14</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Rules checked</span><strong>7</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Genome Confidence</span><strong style="color:#1baf7a">94.2%</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Integrity Score</span><strong style="color:#2a78d6">85/100</strong></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Invoice amount</span><strong>AED 20,150</strong></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Batch Processing</div></div>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Today's genome processing overview</div>
+              <div style="height:160px;position:relative"><canvas id="batchChart" role="img" aria-label="Batch processing breakdown">47 invoices processed today: 38 touchless, 5 in review, 2 failed, 2 pending.</canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISPATCH PAGE -->
+      <div class="page" id="page-dispatch">
+        <div class="section-title">Dispatch Center</div>
+        <div class="section-sub">Automated invoice dispatch and client approval tracking</div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Dispatched Today</div><div class="kpi-value" style="color:#2a78d6">18</div></div>
+          <div class="kpi-card"><div class="kpi-label">Awaiting Approval</div><div class="kpi-value" style="color:#eda100">7</div></div>
+          <div class="kpi-card"><div class="kpi-label">Client Approved</div><div class="kpi-value" style="color:#1baf7a">9</div></div>
+          <div class="kpi-card"><div class="kpi-label">Overdue</div><div class="kpi-value" style="color:#e34948">2</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Dispatch Queue</div><button class="btn btn-primary btn-sm" onclick="alert('Auto-dispatch initiated for 18 pending invoices')"><i class="ti ti-send"></i> Auto-Dispatch All</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Sent</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>INV-2047</td><td>Accenture / ADNOC</td><td>AED 20,150</td><td>10:32</td><td><span class="badge badge-success">Approved</span></td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+                <tr><td>INV-2048</td><td>TCS / DU Telecom</td><td>AED 31,200</td><td>10:45</td><td><span class="badge badge-warning">Pending</span></td><td><button class="btn btn-sm"><i class="ti ti-send"></i></button></td></tr>
+                <tr><td>INV-2049</td><td>Wipro / Etisalat</td><td>AED 18,750</td><td>11:02</td><td><span class="badge badge-warning">Pending</span></td><td><button class="btn btn-sm"><i class="ti ti-send"></i></button></td></tr>
+                <tr><td>INV-2050</td><td>Accenture / ADNOC</td><td>AED 24,300</td><td>11:15</td><td><span class="badge badge-success">Approved</span></td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+                <tr><td>INV-2031</td><td>Infosys / DEWA</td><td>AED 15,600</td><td>—</td><td><span class="badge badge-danger">Duplicate</span></td><td><button class="btn btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr><td>INV-2043</td><td>Emirates / ADIB</td><td>AED 9,800</td><td>09:30</td><td><span class="badge badge-danger">Overdue</span></td><td><button class="btn btn-sm" onclick="alert('Reminder sent to ADIB procurement')"><i class="ti ti-bell"></i></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- AI Copilot -->
+<div class="copilot-bubble">
+  <div class="copilot-panel" id="copilot-panel">
+    <div class="copilot-header">
+      <div class="copilot-title"><i class="ti ti-robot"></i> Genome AI Copilot</div>
+      <div class="copilot-sub">Ask me anything about invoices</div>
+    </div>
+    <div class="copilot-messages" id="copilot-msgs">
+      <div class="copilot-msg ai">Hi! I'm your Genome AI Copilot. I can generate invoices, explain validations, find duplicates, or summarize today's processing. What do you need?</div>
+    </div>
+    <div class="copilot-suggestions">
+      <button class="copilot-suggest" onclick="sendCopilot('Today&apos;s processing')">
+    Today's summary
+</button>
+
+<button class="copilot-suggest" onclick="sendCopilot('Show pending approvals')">
+    Pending approvals
+</button>
+      <button class="copilot-suggest" onclick="sendCopilot('Find duplicate invoices')">Find duplicates</button>
+      <button class="copilot-suggest" onclick="sendCopilot('Generate invoices for all validated timesheets')">Generate invoices</button>
+    </div>
+    <div class="copilot-input-row">
+      <input class="copilot-input" id="copilot-input" type="text" placeholder="Type a command..." onkeydown="if(event.key==='Enter')sendCopilotInput()">
+      <button class="copilot-send" onclick="sendCopilotInput()"><i class="ti ti-send" style="font-size:13px"></i></button>
+    </div>
+  </div>
+  <button class="copilot-btn" onclick="openCopilot()">
+    <i class="ti ti-robot"></i>
+  </button>
+</div>
+
+<!-- AI Explain Modal -->
+<div class="modal-overlay" id="explain-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-info-circle" style="color:#2a78d6"></i> AI Explanation Window</div>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <span class="badge badge-warning"><i class="ti ti-alert-triangle"></i> Confidence 88%</span>
+      <span class="badge badge-info">Tax Rate Field</span>
+      <span class="badge badge-purple">UAE Entity</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="background:var(--surface-1);border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:4px">REASON</div>
+        The extracted tax rate shows 0%. UAE entities operating in free zones have 0% corporate tax on qualifying income. This value appears correct but confidence is reduced because the document didn't explicitly label this field.
+      </div>
+      <div style="background:var(--surface-1);border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:4px">MATCHED RULE</div>
+        Rule: UAE_TAX_2023_CORPORATE_RATE · Entity AME001 · Free zone exemption applies
+      </div>
+      <div style="background:var(--surface-1);border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:4px">EXTRACTED TEXT</div>
+        <span style="font-family:monospace;color:#2a78d6">"Tax: N/A — UAE Entity"</span> (row 14, column B)
+      </div>
+      <div style="background:var(--surface-1);border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:4px">SUGGESTED FIX</div>
+        Confirm with client ERP record. If AME001 is registered in JAFZA free zone, 0% is correct. No change required.
+      </div>
+      <div style="background:var(--surface-1);border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:4px">BUSINESS LOGIC</div>
+        UAE VAT is 5% on goods/services, but employee salary payments between UAE entities are tax-exempt. Genome AI applied the salary exemption rule.
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary btn-sm" onclick="closeModal()"><i class="ti ti-check"></i> Accept Explanation</button>
+      <button class="btn btn-sm" onclick="closeModal()"><i class="ti ti-edit"></i> Override Manually</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const pages = {
+  'dashboard': 'Dashboard',
+  'upload': 'Upload',
+  'extraction': 'Genome Extraction',
+  'dna-viewer': 'DNA Viewer',
+  'validation': 'Validation',
+  'review': 'Human Review',
+  'policy': 'Policy Guardian',
+  'generator': 'Invoice Generator',
+  'dispatch': 'Dispatch Center',
+  'analytics': 'Analytics',
+  'insights': 'Finance Insights',
+  'genome-timeline': 'Genome Timeline'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const navItem = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'"));
+  if (navItem) navItem.classList.add('active');
+  document.getElementById('page-title').textContent = pages[id] || id;
+  document.getElementById('breadcrumb').textContent = 'Genome Intelligence';
+  window.scrollTo(0, 0);
+}
+
+function openCopilot() {
+  const panel = document.getElementById('copilot-panel');
+  panel.classList.toggle('open');
+}
+
+const copilotResponses = {
+  "today": "Today: 47 invoices processed · 38 touchless (81%) · 5 in review · 2 failed validation · AED 2.4M total value · AI accuracy 97.4%. Genome Health Score: 85/100.",
+  "pending": "5 invoices in human review queue: TCS salary mismatch (72% conf), Emirates handwritten scan (61% conf), Infosys duplicate risk (88% conf), and 2 more. Navigate to Human Review to action them.",
+  "duplicate": "1 duplicate detected: INV-2031 (Infosys / DEWA) was submitted twice. Policy Guardian blocked auto-approval. Resolution ticket RES-2024-1182 created and assigned to Fatima Al-Zaabi.",
+  "generate": "Ready to generate 24 invoices for validated timesheets worth AED 1.2M. Batch processing estimated at 72 seconds. Shall I proceed? Navigate to Invoice Generator to confirm.",
+  "default": "I can help with: summarizing processing, finding duplicates, checking pending approvals, or generating invoices. Try asking: 'Show pending approvals' or 'Generate invoices'."
+};
+
+function sendCopilot(text) {
+  const msgs = document.getElementById('copilot-msgs');
+  const userDiv = document.createElement('div');
+  userDiv.className = 'copilot-msg user';
+  userDiv.textContent = text;
+  msgs.appendChild(userDiv);
+
+  const t = text.toLowerCase();
+  let resp = copilotResponses.default;
+  if (t.includes('summar') || t.includes('today')) resp = copilotResponses["today"];
+  else if (t.includes('pending') || t.includes('approv')) resp = copilotResponses["pending"];
+  else if (t.includes('duplicate')) resp = copilotResponses["duplicate"];
+  else if (t.includes('generate')) resp = copilotResponses["generate"];
+
+  setTimeout(() => {
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'copilot-msg ai';
+    aiDiv.textContent = resp;
+    msgs.appendChild(aiDiv);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 600);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sendCopilotInput() {
+  const inp = document.getElementById('copilot-input');
+  if (inp.value.trim()) { sendCopilot(inp.value); inp.value = ''; }
+}
+
+function openExplainModal() {
+  document.getElementById('explain-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('explain-modal').classList.remove('open');
+}
+
+const dnaInsights = {
+  employee: { title: 'Employee Node — AI Insight', body: 'Ahmed Al-Rashid identified with 98% confidence. Matched against ERP master record EMP-04821. Name extracted from bold header text at document row 4.' },
+  hours: { title: 'Hours Node — AI Insight', body: '176 hours extracted (22 days × 8 hrs). Validated against June 2026 calendar. Overtime: 8 hrs detected in separate row — flagged for policy check.' },
+  salary: { title: 'Salary Node — AI Insight', body: 'AED 18,500 base salary extracted with 91% confidence. Cross-verified with ERP grade band for Consultant level. Within approved range AED 16,000–22,000.' },
+  tax: { title: 'Tax Node — AI Insight (88% Confidence)', body: 'Tax shown as N/A / UAE Entity. Applied Rule: UAE_TAX_2023_CORPORATE_RATE. Free zone entity AME001 — salary payments tax-exempt. Verification recommended.' },
+  client: { title: 'Client Node — AI Insight', body: 'Client detected as Abu Dhabi National Oil Co. (ADNOC). Matched with 79% confidence — abbreviation used in document. Resolved via ERP client master lookup.' },
+  validation: { title: 'Validation Node — AI Insight', body: '6 of 7 validation rules passed. Failure: Overtime cap exceeded (8hrs vs 6hr policy max). Smart Correction suggested. Resolution ticket auto-created.' },
+  integrity: { title: 'Integrity Score Node — 85/100', body: 'Score breakdown: Validation 30/30 · Confidence 25/30 · History 15/20 · Risk 15/20. Overall: GOOD — proceed to ERP conversion.' },
+  ocr: { title: 'OCR Node — AI Insight', body: 'Document scanned in 0.8 seconds. 12 pages processed. 97.3% character recognition accuracy. No corrupted regions detected. Font: Arial 11pt — high OCR compatibility.' },
+  erp: { title: 'ERP Conversion Node', body: 'SAP format generated. GL codes mapped: Salary → GL-500100, Overtime → GL-500120. Cost center CC-AME-004 applied. Export ready for SAP FI module.' },
+  policy: { title: 'Policy Guardian Node', body: 'All 7 finance policies verified. Payroll policy: Pass. Client billing rules: Pass. Tax rules UAE: Pass. Overtime cap: FAIL — correction applied. Finance rules: Pass.' }
+};
+
+function showDnaInsight(key) {
+  const box = document.getElementById('dna-insight-box');
+  const insight = dnaInsights[key];
+  if (insight) {
+    document.getElementById('dna-insight-title').textContent = insight.title;
+    document.getElementById('dna-insight-body').textContent = insight.body;
+    box.style.display = 'block';
+  }
+}
+
+function simulateUpload() {
+  const prog = document.getElementById('upload-progress');
+  if (prog) prog.style.display = 'block';
+  let w = 45;
+  const bar = document.getElementById('proc-bar');
+  const iv = setInterval(() => {
+    w += Math.random() * 8;
+    if (w >= 100) { w = 100; clearInterval(iv); }
+    if (bar) bar.style.width = Math.min(w, 100) + '%';
+  }, 400);
+}
+
+window.addEventListener('load', () => {
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const gridColor = isDark ? '#2c2c2a' : '#e1e0d9';
+  const textColor = isDark ? '#c3c2b7' : '#898781';
+
+  try {
+    new Chart(document.getElementById('volumeChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Invoices',
+          data: [142, 168, 195, 221, 248, 282],
+          backgroundColor: '#2a78d6',
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('accuracyChart'), {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'AI Accuracy %',
+          data: [93.1, 94.2, 95.0, 96.1, 96.8, 97.4],
+          borderColor: '#1baf7a',
+          backgroundColor: 'rgba(27,175,122,0.08)',
+          borderWidth: 2,
+          pointBackgroundColor: '#1baf7a',
+          pointRadius: 4,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { min: 90, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => v + '%' } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('exceptionChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Salary Mismatch', 'Duplicate', 'Low Confidence', 'Tax Issue', 'Other'],
+        datasets: [{
+          data: [35, 22, 18, 15, 10],
+          backgroundColor: ['#2a78d6', '#1baf7a', '#eda100', '#e34948', '#4a3aa7'],
+          borderWidth: 2,
+          borderColor: isDark ? '#1a1a19' : '#fff'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, color: textColor, boxWidth: 10, padding: 8 } } }
+      }
+    });
+
+    new Chart(document.getElementById('forecastChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Q1 Actual', 'Q2 Actual', 'Q3 Forecast', 'Q4 Forecast'],
+        datasets: [{
+          label: 'Revenue (AED M)',
+          data: [5.8, 6.9, 8.2, 9.4],
+          backgroundColor: ['#2a78d6', '#2a78d6', 'rgba(42,120,214,0.4)', 'rgba(42,120,214,0.3)'],
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+          y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => 'M ' + v } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('batchChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Touchless', 'In Review', 'Failed', 'Pending'],
+        datasets: [{
+          data: [38, 5, 2, 2],
+          backgroundColor: ['#1baf7a', '#eda100', '#e34948', '#888780'],
+          borderWidth: 2,
+          borderColor: isDark ? '#1a1a19' : '#fff'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, color: textColor, boxWidth: 8, padding: 6 } } }
+      }
+    });
+  } catch(e) { console.log('Chart error:', e); }
+
+  setInterval(() => {
+    const feed = document.getElementById('activity-feed');
+    if (!feed) return;
+    const msgs = [
+      { icon: 'ai-icon', i: 'ti-robot', text: 'Genome extraction complete — <strong>Wipro_June.pdf</strong>', time: 'Just now · Confidence 92%' },
+      { icon: 'check-icon', i: 'ti-check', text: 'Invoice <strong>INV-2051</strong> generated — AED 17,400', time: 'Just now · TCS Ltd.' },
+      { icon: 'warn-icon', i: 'ti-alert-triangle', text: '<strong>Currency mismatch</strong> detected — sent to review', time: 'Just now · Employee ID E-0731' }
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<div class="activity-icon ${m.icon}"><i class="ti ${m.i}"></i></div><div class="activity-body"><div class="activity-text">${m.text}</div><div class="activity-time">${m.time}</div></div>`;
+    feed.insertBefore(div, feed.firstChild);
+    if (feed.children.length > 6) feed.removeChild(feed.lastChild);
+  }, 4000);
+});
+</script>
+</body>
+</html>
