@@ -1,0 +1,13 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+sqlalchemy>=2.0.30
+pydantic>=2.7.0
+pandas>=2.2.2
+openpyxl>=3.1.2
+python-docx>=1.1.2
+pdfplumber>=0.11.0
+reportlab>=4.2.0
+pillow>=10.3.0
+pytesseract>=0.3.10
+easyocr>=1.7.1

@@ -1,0 +1,8 @@
+2026-06-28 08:30:20,257 INFO dataset: {"customers": 10, "employees": 200, "payroll": 200, "test_cases": 8}
+2026-06-28 08:31:00,422 INFO dataset: {"customers": 10, "employees": 200, "payroll": 200, "test_cases": 8}
+2026-06-28 08:31:55,139 INFO upload: Uploaded sample_timesheet.xlsx as 20260628030155_641e8dfb.xlsx
+2026-06-28 08:31:55,151 INFO validation: Extraction 1: Valid (98.75%) - All validation rules passed
+2026-06-28 08:31:55,157 INFO invoice: Generated INV-2026-00001 for extraction 1
+2026-06-28 08:34:42,632 INFO upload: Uploaded sample_timesheet.xlsx as 20260628030442_be271c85.xlsx
+2026-06-28 08:34:42,642 INFO validation: Extraction 2: Error (90.41%) - Duplicate invoice detected: INV-2026-00001
+2026-06-28 08:34:42,643 INFO exception: Queued exception 1 for extraction 2
