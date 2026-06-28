@@ -1,0 +1,221 @@
+
+      <!-- DNA VIEWER PAGE -->
+      <div class="page" id="page-dna-viewer">
+        <div class="section-title">Invoice DNA Viewer</div>
+        <div class="section-sub">Visual genome map of INV-2047 — click any node to inspect AI insights</div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-title">Invoice DNA Structure — Accenture June 2026</div>
+            <span class="badge badge-success"><i class="ti ti-dna"></i> Genome Verified</span>
+          </div>
+          <div class="dna-container">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">Strand A — Employee Data</div>
+            <div class="dna-track">
+              <div class="dna-node" onclick="showDnaInsight('employee')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-user" style="font-size:18px"></i></div>
+                <div class="dna-label">Employee</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('hours')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-clock" style="font-size:18px"></i></div>
+                <div class="dna-label">Hours</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('salary')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-currency-dollar" style="font-size:18px"></i></div>
+                <div class="dna-label">Salary</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('tax')">
+                <div class="dna-circle" style="background:#fef8e7;color:#b07a00;border-color:#eda100"><i class="ti ti-receipt-tax" style="font-size:18px"></i></div>
+                <div class="dna-label">Tax</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('client')">
+                <div class="dna-circle" style="background:#eeedf8;color:#4a3aa7;border-color:#4a3aa7"><i class="ti ti-building" style="font-size:18px"></i></div>
+                <div class="dna-label">Client</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('validation')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-shield-check" style="font-size:18px"></i></div>
+                <div class="dna-label">Validation</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('integrity')">
+                <div class="dna-circle" style="background:#e8f0fb;color:#2a78d6;border-color:#2a78d6"><i class="ti ti-chart-pie" style="font-size:18px"></i></div>
+                <div class="dna-label">Integrity</div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:var(--text-muted);margin:16px 0 12px">Strand B — Processing Trail</div>
+            <div class="dna-track">
+              <div class="dna-node" onclick="showDnaInsight('ocr')">
+                <div class="dna-circle" style="background:#f0efec;color:#52514e;border-color:#b4b2a9"><i class="ti ti-scan" style="font-size:18px"></i></div>
+                <div class="dna-label">OCR</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('erp')">
+                <div class="dna-circle" style="background:#eeedf8;color:#4a3aa7;border-color:#4a3aa7"><i class="ti ti-database" style="font-size:18px"></i></div>
+                <div class="dna-label">ERP</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node" onclick="showDnaInsight('policy')">
+                <div class="dna-circle" style="background:#e8f8f1;color:#1baf7a;border-color:#1baf7a"><i class="ti ti-shield" style="font-size:18px"></i></div>
+                <div class="dna-label">Policy</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#fef8e7;color:#b07a00;border-color:#eda100"><i class="ti ti-clock" style="font-size:18px"></i></div>
+                <div class="dna-label">Pending</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-send" style="font-size:18px"></i></div>
+                <div class="dna-label">Dispatch</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-check-circle" style="font-size:18px"></i></div>
+                <div class="dna-label">Approve</div>
+              </div>
+              <div class="dna-connector"></div>
+              <div class="dna-node">
+                <div class="dna-circle" style="background:#f0efec;color:#888780;border-color:#d3d1c7"><i class="ti ti-archive" style="font-size:18px"></i></div>
+                <div class="dna-label">Archive</div>
+              </div>
+            </div>
+          </div>
+          <div id="dna-insight-box" style="display:none;margin-top:16px;background:var(--surface-1);border-radius:10px;padding:14px;border-left:3px solid #2a78d6">
+            <div style="font-size:12px;font-weight:500;margin-bottom:6px" id="dna-insight-title">AI Insight</div>
+            <div style="font-size:12px;color:var(--text-secondary)" id="dna-insight-body">Click a node to view AI reasoning</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">Invoice Integrity Score</div>
+            <div style="display:flex;align-items:center;gap:20px">
+              <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+                <svg viewBox="0 0 100 100" width="100" height="100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#f0efec" stroke-width="10"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#2a78d6" stroke-width="10" stroke-dasharray="264" stroke-dashoffset="40" stroke-linecap="round" class="progress-ring"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                  <span style="font-size:22px;font-weight:500;color:#2a78d6">85</span>
+                  <span style="font-size:9px;color:var(--text-muted)">/ 100</span>
+                </div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:12px;margin-bottom:8px">Score components</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:11px">
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Validation</span><span style="color:#1baf7a">30/30</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Confidence</span><span style="color:#1baf7a">25/30</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">History</span><span style="color:#eda100">15/20</span></div>
+                  <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Risk</span><span style="color:#eda100">15/20</span></div>
+                  <div style="border-top:0.5px solid var(--border);padding-top:4px;display:flex;justify-content:space-between;font-weight:500"><span>Total</span><span style="color:#2a78d6">85/100</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">Genome Audit Trail</div>
+            <div style="font-size:12px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:01</span><span style="color:#2a78d6">Document uploaded — PDF detected</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:03</span><span>OCR scan initiated — 12 pages</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:05</span><span style="color:#1baf7a">Genome extraction complete — 14 fields</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:06</span><span style="color:#eda100">Tax rate flagged for review — 88% confidence</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:08</span><span style="color:#1baf7a">Policy Guardian — passed all 7 rules</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--text-muted);width:70px">10:32:09</span><span style="color:#2a78d6">Integrity Score calculated: 85/100</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VALIDATION PAGE -->
+      <div class="page" id="page-validation">
+        <div class="section-title">Business Rule Validation</div>
+        <div class="section-sub">Automated validation engine — Policy Guardian active</div>
+
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Validation Results</div>
+                <span class="badge badge-warning">1 Warning</span>
+              </div>
+              <div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>No Duplicate Employee</strong><br><span class="val-rule">Employee ID EMP-04821 — unique in this period</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Working Days Valid</strong><br><span class="val-rule">22 days matches June 2026 calendar</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>No Negative Values</strong><br><span class="val-rule">All fields positive — salary, hours, overtime</span></div>
+                </div>
+                <div class="validation-row val-warn">
+                  <span class="val-icon" style="color:#eda100"><i class="ti ti-alert-triangle"></i></span>
+                  <div class="val-text"><strong>Tax Rate Needs Verification</strong><br><span class="val-rule">UAE entity shows 0% — confirm with client ERP rule</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Currency Match</strong><br><span class="val-rule">AED matches client billing entity AME001</span></div>
+                </div>
+                <div class="validation-row val-pass">
+                  <span class="val-icon" style="color:#1baf7a"><i class="ti ti-check-circle"></i></span>
+                  <div class="val-text"><strong>Salary Within Band</strong><br><span class="val-rule">AED 18,500 — within grade 4 approved band</span></div>
+                </div>
+                <div class="validation-row val-error">
+                  <span class="val-icon" style="color:#e34948"><i class="ti ti-x-circle"></i></span>
+                  <div class="val-text"><strong>Smart Correction Suggested</strong><br><span class="val-rule">Overtime hours: 8 hrs → max allowed per policy is 6 hrs</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Smart Correction AI</div><span class="badge badge-purple"><i class="ti ti-sparkles"></i> AI</span></div>
+              <div style="background:#fdeaea;border-radius:8px;padding:12px;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:500;color:#b03030;margin-bottom:4px"><i class="ti ti-alert-triangle"></i> Correction Required</div>
+                <div style="font-size:12px;color:#8b2020">Overtime hours is 8 but policy limit is 6. Working Days should be recalculated.</div>
+                <button class="btn btn-sm" style="margin-top:8px;background:#e34948;color:#fff;border-color:#e34948" onclick="alert('Correction applied: Overtime set to 6 hrs. Total recalculated.')">Apply Correction</button>
+              </div>
+              <div style="background:#fef8e7;border-radius:8px;padding:12px">
+                <div style="font-size:12px;font-weight:500;color:#b07a00;margin-bottom:4px"><i class="ti ti-info-circle"></i> AI Suggestion</div>
+                <div style="font-size:12px;color:#8a5d00">Currency should be confirmed as AED. Client AME001 contracts are AED-denominated per ERP master data.</div>
+                <button class="btn btn-sm" style="margin-top:8px;border-color:#eda100;color:#b07a00">Confirm AED</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Policy Guardian</div><span class="badge badge-success"><i class="ti ti-shield-check"></i> 6/7 Passed</span></div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Payroll Policy</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Client Billing Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Tax Rules (UAE)</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#fdeaea;border-radius:7px"><span>Overtime Cap Policy</span><span style="color:#e34948"><i class="ti ti-x"></i> Fail</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>ERP Conversion Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Finance Rules</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 10px;background:#e8f8f1;border-radius:7px"><span>Duplicate Check</span><span style="color:#1baf7a"><i class="ti ti-check"></i> Pass</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Resolution Box</div></div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Overtime policy violation — resolution ticket automatically created</div>
+              <div style="background:var(--surface-1);border-radius:8px;padding:12px;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:500">RES-2024-1182</span><span class="badge badge-warning">Open</span></div>
+                <div style="font-size:11px;color:var(--text-muted)">Assigned to: Fatima Al-Zaabi (Finance Review)</div>
+                <div style="font-size:11px;color:var(--text-muted)">Created: 10:32:10 today</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-primary" onclick="alert('Email sent to ahmed.alrashid@accenture.com')"><i class="ti ti-mail"></i> Email Client</button>
+                <button class="btn btn-sm"><i class="ti ti-eye"></i> View Ticket</button>
+                <button class="btn btn-sm" onclick="showPage('review')"><i class="ti ti-arrow-right"></i> Send to Review</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

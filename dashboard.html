@@ -1,0 +1,171 @@
+<div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="section-title">Genome Intelligence Hub</div>
+        <div class="section-sub">Real-time processing overview — <strong>June 27, 2026</strong></div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Invoices Today</div>
+            <div class="kpi-value" style="color:#2a78d6">47</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> +12 from yesterday</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pending Review</div>
+            <div class="kpi-value" style="color:#eda100">5</div>
+            <div class="kpi-delta"><span style="color:#eda100"><i class="ti ti-clock" style="font-size:12px"></i> Needs attention</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">AI Accuracy</div>
+            <div class="kpi-value" style="color:#1baf7a">97.4%</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> +0.3% this week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Touchless Rate</div>
+            <div class="kpi-value" style="color:#4a3aa7">89%</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> Target: 95%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Revenue Processed</div>
+            <div class="kpi-value" style="font-size:20px">AED 2.4M</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> This month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Avg Processing</div>
+            <div class="kpi-value" style="font-size:20px">3.2s</div>
+            <div class="kpi-delta delta-up"><i class="ti ti-trending-up" style="font-size:12px"></i> -0.4s improved</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Monthly Invoice Volume</div>
+              <span class="badge badge-info">2026</span>
+            </div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="volumeChart" role="img" aria-label="Monthly invoice volume chart">Monthly invoice volumes from Jan to Jun 2026.</canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Live Activity Feed</div>
+              <span class="badge badge-success"><span class="dot dot-green"></span> Live</span>
+            </div>
+            <div id="activity-feed">
+              <div class="activity-item">
+                <div class="activity-icon ai-icon"><i class="ti ti-robot"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Genome extracted from <strong>Accenture_TS_June.pdf</strong></div>
+                  <div class="activity-time">2 seconds ago · Confidence 96%</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon check-icon"><i class="ti ti-check"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Invoice <strong>INV-2047</strong> approved and dispatched</div>
+                  <div class="activity-time">14 seconds ago · Infosys Ltd.</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon warn-icon"><i class="ti ti-alert-triangle"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text"><strong>Salary mismatch</strong> detected — sent to review queue</div>
+                  <div class="activity-time">1 min ago · Employee ID E-0492</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon ai-icon"><i class="ti ti-dna"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Genome Confidence Index: <strong>94.2%</strong> — TCS Timesheet</div>
+                  <div class="activity-time">2 min ago · Genome verified</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon err-icon"><i class="ti ti-x"></i></div>
+                <div class="activity-body">
+                  <div class="activity-text">Duplicate invoice detected — <strong>INV-2031</strong> flagged</div>
+                  <div class="activity-time">5 min ago · Policy Guardian blocked</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Workflow Pipeline</div>
+            </div>
+            <div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#1baf7a"></div><span class="pipeline-label">OCR &amp; Extraction</span><span class="pipeline-count" style="color:#1baf7a">38</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#1baf7a"></div><span class="pipeline-label">Validation</span><span class="pipeline-count" style="color:#1baf7a">31</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#eda100"></div><span class="pipeline-label">Human Review</span><span class="pipeline-count" style="color:#eda100">5</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#2a78d6"></div><span class="pipeline-label">ERP Conversion</span><span class="pipeline-count" style="color:#2a78d6">24</span></div>
+              <div class="pipeline-line"></div>
+              <div class="pipeline-step"><div class="pipeline-dot" style="background:#4a3aa7"></div><span class="pipeline-label">Dispatch</span><span class="pipeline-count" style="color:#4a3aa7">18</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Genome Health Score</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+              <div style="position:relative;width:90px;height:90px;flex-shrink:0">
+                <svg viewBox="0 0 90 90" width="90" height="90">
+                  <circle cx="45" cy="45" r="38" fill="none" stroke="#f0efec" stroke-width="8"/>
+                  <circle cx="45" cy="45" r="38" fill="none" stroke="#1baf7a" stroke-width="8" stroke-dasharray="239" stroke-dashoffset="36" stroke-linecap="round" class="progress-ring"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+                  <span style="font-size:20px;font-weight:500;color:#1baf7a">85</span>
+                  <span style="font-size:9px;color:var(--text-muted)">/ 100</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:500;margin-bottom:8px">Today's genome health</div>
+                <div style="font-size:11px;color:#1baf7a;margin-bottom:4px"><i class="ti ti-check"></i> 42 passed integrity check</div>
+                <div style="font-size:11px;color:#eda100;margin-bottom:4px"><i class="ti ti-alert-triangle"></i> 5 in review queue</div>
+                <div style="font-size:11px;color:#e34948"><i class="ti ti-x"></i> 2 failed validation</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Top Clients</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#e8f0fb;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#2a78d6;flex-shrink:0">AC</div>
+                <span style="flex:1">Accenture</span>
+                <span class="badge badge-success">Trust 98</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#e8f8f1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#1baf7a;flex-shrink:0">TC</div>
+                <span style="flex:1">TCS</span>
+                <span class="badge badge-success">Trust 95</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#fef8e7;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#b07a00;flex-shrink:0">IS</div>
+                <span style="flex:1">Infosys</span>
+                <span class="badge badge-warning">Trust 78</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#eeedf8;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#3a2d8a;flex-shrink:0">WP</div>
+                <span style="flex:1">Wipro</span>
+                <span class="badge badge-info">Trust 88</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                <div style="width:24px;height:24px;border-radius:6px;background:#fdeaea;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#b03030;flex-shrink:0">EM</div>
+                <span style="flex:1">Emirates Group</span>
+                <span class="badge badge-danger">Trust 61</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
